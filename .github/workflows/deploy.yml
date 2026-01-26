@@ -64,3 +64,11 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_USER_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Post Deployment Notification
+        if: success()
+        run: echo "✅ Deployment to Vercel was successful!"
+
+      - name: Post Deployment Failure Notification
+        if: failure()
+        run: echo "❌ Deployment to Vercel failed."

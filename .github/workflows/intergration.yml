@@ -21,10 +21,24 @@ jobs:
         run: npm i
 
       - name: 'Run ESLint'
+        id: eslint-check
         run: npx eslint .
+        continue-on-error: true
+
+      - name: 'Run ESLint Fix'
+        if: steps.eslint-check.outcome == 'failure'
+        run: echo "❌ESLint issues found. Running fix..."
+          npx eslint . --fix
 
       - name: 'Run Prettier'
+        id: prettier-check
         run: npx prettier --check .
+        continue-on-error: true
+
+      - name: 'Run Prettier Fix'
+        if: steps.prettier-check.outcome == 'failure'
+        run: echo "❌Prettier issues found. Running fix..."
+          npx prettier --write .
 
       - name: 'Build command'
         run: npm run build

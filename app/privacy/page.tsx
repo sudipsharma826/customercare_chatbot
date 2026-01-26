@@ -1,3 +1,4 @@
+export const revalidate = 60; // ISR
 import AnimatedContent from '@/components/layout/animated-content';
 import SectionTitle from '@/components/layout/section-title';
 import { ShieldCheckIcon } from 'lucide-react';

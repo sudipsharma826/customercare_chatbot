@@ -5,3 +5,4 @@ dist
 build
 coverage
 public
+next-env.d.ts

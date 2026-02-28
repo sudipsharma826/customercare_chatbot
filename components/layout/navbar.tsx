@@ -1,23 +1,36 @@
 'use client';
 
-import { MenuIcon, XIcon } from 'lucide-react';
+import { MenuIcon, XIcon, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { useUser } from '@/hooks/useUser';
 import ThemeToggle from './theme-toggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { links } from '@/data/links';
 import { ILink } from '@/types/sites';
+import { UserSession } from '@/types/user';
+
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, loading, error } = useUser() as { user: UserSession | null; loading: boolean; error: string | null };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+
 
   return (
     <>
@@ -50,18 +63,68 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <div className="hidden md:flex items-center gap-3">
-              <Link
-                href="/login"
-                className="text-sm font-bold text-foreground/80 hover:text-primary transition-all"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="py-3 px-8 bg-primary text-white rounded-full hover:shadow-xl hover:shadow-orange-500/20 transition-all font-black text-xs uppercase tracking-widest active:scale-95 shadow-lg shadow-orange-500/10"
-              >
-                Get Started
-              </Link>
+              {loading ? (
+                <span className="text-xs text-foreground/60 font-semibold">Loading...</span>
+              ) : user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2 focus:outline-none">
+                      <span className="w-10 h-10 rounded-full border border-border bg-white flex items-center justify-center overflow-hidden">
+                        <Image
+                          src={user.image ? user.image : '/assets/logo.png'}
+                          alt={user.name || 'User'}
+                          width={40}
+                          height={40}
+                          className="object-cover w-10 h-10"
+                        />
+                      </span>
+                      <span className="text-base font-semibold text-foreground/90 max-w-[120px] truncate capitalize">{user.name}</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="flex items-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-600 focus:text-red-700 flex items-center gap-2"
+                      onClick={() => {
+                        localStorage.removeItem('user_info');
+                        window.location.href = '/api/auth/logout';
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : error ? (
+                <span className="text-xs text-red-500 font-semibold">{error}</span>
+              ) : (
+                <>
+                  <Link
+                    href="/api/auth"
+                    className="text-sm font-bold text-foreground/80 hover:text-primary transition-all"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/api/auth"
+                    className="py-3 px-8 bg-primary text-white rounded-full hover:shadow-xl hover:shadow-orange-500/20 transition-all font-black text-xs uppercase tracking-widest active:scale-95 shadow-lg shadow-orange-500/10"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
             <button
               className="md:hidden p-3 text-foreground relative z-[110] bg-secondary/50 rounded-xl cursor-pointer"
@@ -103,14 +166,14 @@ export default function Navbar() {
                 ))}
                 <div className="h-px bg-border my-2" />
                 <Link
-                  href="/login"
+                  href="/api/auth"
                   className="hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/api/auth"
                   className="py-5 px-8 bg-primary text-white text-center rounded-[1.5rem] shadow-xl shadow-orange-500/20 text-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
